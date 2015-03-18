@@ -1,0 +1,64 @@
+<html>
+  <title>{{.title}}</title>
+  <head>
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/css/materialize.min.css">
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    
+  </head>
+  <body>
+	<header>
+	  <div class="container">
+		<a href="#" data-activates="nav-mobile" class="button-collapse top-nav">
+		  <i class="mdi-navigation-menu"></i>
+		</a>
+	  </div>
+	</header>
+	<main>
+	  
+
+	</main>
+	<nav class="light-blue lighten-1" role="navigation">
+	  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">metachu</a>
+		<ul class="right">
+          <li><a href="#">Navbar Link</a></li>
+		</ul>
+
+		<ul id="nav-mobile" class="side-nav">
+          <li><a href="#">Navbar Link</a></li>
+		</ul>
+		<a href="#" data-activates="nav-mobile" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+      </div>
+	</nav>
+
+	<div class="section no-pad-bot" id="index-banner">
+      <div class="container">
+
+		<h1 class="header center red-text">401 ERROR</h1>
+		<div class="row center">
+          <h5 class="header col s12 light">The path cannot be found or accessed</h5>
+		</div>
+		<div class="row center">
+          <a href="/files/" id="download-button" class="btn-large waves-effect waves-light orange">Back to file index</a>
+		</div>
+
+
+      </div>
+	</div>
+	{{.flash}}
+	{{.missing}}
+
+	<!-- Compiled and minified JavaScript. Loading jquery first -->	
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/js/materialize.min.js"></script>   
+
+	<script type="text/javascript">
+	  {{ if .flash }}
+	    toast('<div><h5 class="red-text">{{.flash}}</h5></div>', 4000) // 4000 is the duration of the toast
+	  {{ end }}
+	</script>
+  </body>
+
+</html>

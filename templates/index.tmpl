@@ -1,0 +1,96 @@
+<html>
+  <title>{{.title}}</title>
+  <head>
+	<!-- Compiled and minified CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/css/materialize.min.css">
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    
+  </head>
+  <body>
+	<nav class="light-blue lighten-1" role="navigation">
+	  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">metachu</a>
+		<ul class="right">
+          <li><a href="#">Navbar Link</a></li>
+		</ul>
+
+		<ul id="nav-mobile" class="side-nav">
+          <li><a href="#">Navbar Link</a></li>
+		</ul>
+		<a href="#" data-activates="nav-mobile" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+      </div>
+	</nav>
+
+
+	<div class="container">
+	  <div class="section">
+		<h4 class="header blue-text lighten-3 thin">  
+		  <a href=".."><i class="mdi-navigation-arrow-back"></i></a>
+		  {{.path}}
+		</h4>
+
+
+		<table id="myTable" class="my Table hoverable">
+		  <thead>
+			<tr>
+			  <td>Name</td>
+			  <td>IsDir</td>
+			  <td>Size</td>
+			  <td>Last modified</td>
+			  <td>Actions</td>
+			</tr>
+		  </thead>
+		  {{range .files}}
+		  <tr>
+			<td class="truncate">
+			  <a href="{{.Ahref}}">
+				{{if .Icon}}<i class="{{.Icon}}"></i>{{end}}
+				{{.Name}} 
+			  </a>
+			</td>
+			<td>{{.IsDir}}</td>
+			<td data-sort="{{.Size}}">{{.Humansize}}</td>
+			<td data-sort="{{.LastModifiedTime}}">{{.LastModified}}</td>
+			<td>
+			  <a class="waves-effect waves-light btn">zip</a>
+			  <a class="waves-effect waves-light red lighten-2 btn">
+				<!-- <i class="mdi-action-delete"></i> -->
+				del
+			  </a>
+			  <a class="waves-effect waves-light blue lighten-1 btn">move</a>
+			</td>
+		  </tr>
+		  {{end}}
+		</table>
+
+	  </div>
+	</div>
+	<!-- Compiled and minified JavaScript. Loading jquery first -->	
+	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/js/materialize.min.js"></script>   
+	<script type="text/javascript">
+	  {{ if .flash }}
+	    toast('<div><h5 class="red-text">{{.flash}}</h5></div>', 4000) // 4000 is the duration of the toast
+	  {{ end }}
+	</script>
+	<script type="text/javascript">
+	  $(document).ready(function(){
+      $('#myTable').DataTable({
+	     paging: false,
+	     searching: false,
+         order: [[1, "desc"],[0,"asc"]],
+	     info:      false,
+	     columnDefs:[
+	       {
+	          targets: [1],
+	          visible: false
+	       }
+	     ]
+	  });
+	  });
+	</script>
+  </body>
+
+</html>

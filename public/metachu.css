@@ -1,0 +1,95 @@
+#nav-container {
+	height:100px;
+}
+
+.skew-title {
+  font-size: 25px;
+}
+.skew-title span {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 50px;
+  margin: auto;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  font-family: 'roboto';
+  font-weight: 700;
+  font-size: 35.714285714285715px;
+  line-height: 50px;
+  -webkit-transform: skewY(-15deg);
+      -ms-transform: skewY(-15deg);
+          transform: skewY(-15deg);
+  -webkit-transform-origin: 0 100%;
+      -ms-transform-origin: 0 100%;
+          transform-origin: 0 100%;
+  -webkit-transition: all 0.2s;
+          transition: all 0.2s;
+  cursor: default;
+}
+.skew-title span:after,
+.skew-title span:before {
+  display: block;
+  top: 0;
+  left: 0;
+  position: absolute;
+  background: #185a81;
+  height: 50px;
+  width: 40px;
+  content: ' ';
+  z-index: -1;
+  -webkit-transition: all 0.2s;
+          transition: all 0.2s;
+}
+.skew-title span:before {
+  background: rgba(0,0,0,0.1);
+  -webkit-transform: skewY(15deg);
+      -ms-transform: skewY(15deg);
+          transform: skewY(15deg);
+  -webkit-transform-origin: 0 0;
+      -ms-transform-origin: 0 0;
+          transform-origin: 0 0;
+}
+.skew-title span:nth-child(even) {
+  background-color: #154e70;
+  -webkit-transform: skewY(15deg);
+      -ms-transform: skewY(15deg);
+          transform: skewY(15deg);
+  -webkit-transform-origin: 100% 100%;
+      -ms-transform-origin: 100% 100%;
+          transform-origin: 100% 100%;
+}
+.skew-title span:nth-child(even):after {
+  background-color: #154e70;
+}
+.skew-title span:nth-child(even):before {
+  -webkit-transform-origin: 100% 0;
+      -ms-transform-origin: 100% 0;
+          transform-origin: 100% 0;
+  -webkit-transform: skewY(-15deg);
+      -ms-transform: skewY(-15deg);
+          transform: skewY(-15deg);
+}
+.skew-title span.flat {
+  -webkit-transform: skewY(0);
+      -ms-transform: skewY(0);
+          transform: skewY(0);
+}
+.skew-title span.flat:before {
+  -webkit-transform: skewY(0);
+      -ms-transform: skewY(0);
+          transform: skewY(0);
+}
+.skew-title span.flat:nth-child(even):after {
+  background-color: #185a81;
+}
+.skew-title span.alt:after {
+  background-color: #b94a2c;
+}
+.skew-title span.alt:nth-child(even):after {
+  background-color: #a14026;
+}
+.skew-title span.alt.flat:nth-child(even):after {
+  background-color: #b94a2c;
+}

@@ -1,16 +1,22 @@
+
 <html>
   <title>{{.title}}</title>
   <head>
 	<!-- Compiled and minified CSS -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/css/materialize.min.css">
-
-
+	<link rel="stylesheet" href="/public/metachu.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     
   </head>
   <body>
-	<nav class="light-blue lighten-1" role="navigation">
-	  <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo">metachu</a>
+	<!-- Navigation   -->
+	<nav id="nav-container" class="blue-grey darken-2" role="navigation">
+	  <div class="nav-wrapper container">
+		<a id="logo-container" href="#" class="brand-logo center">
+		  <h1 class="row skew-title">  
+			<span>M</span><span>E</span><span>T</span><span>A</span><span class="alt">C</span><span class="alt">H</span><span class="alt">U</span><span class="alt last">λ</span>
+		  </h1>
+		</a>
 		<ul class="right">
           <li><a href="#">Navbar Link</a></li>
 		</ul>
@@ -22,15 +28,17 @@
       </div>
 	</nav>
 
-
+	<!-- Body -->
 	<div class="container">
 	  <div class="section">
-		<h4 class="header blue-text lighten-3 thin">  
-		  <a href=".."><i class="mdi-navigation-arrow-back"></i></a>
+
+		<h4 class="header grey-text text-darken-1 thin">  
+		  <a href="."><i class="text-deep-orange mdi-navigation-arrow-back"></i></a>
 		  {{.path}}
 		</h4>
+		
 
-
+		<!-- File index table -->
 		<table id="myTable" class="my Table hoverable">
 		  <thead>
 			<tr>
@@ -42,7 +50,7 @@
 			</tr>
 		  </thead>
 		  {{range .files}}
-		  <tr>
+		  <tr class="file-row" data-filename="{{.Name}}" data-md5="{{.MD5}}">
 			<td class="truncate">
 			  <a href="{{.Ahref}}">
 				{{if .Icon}}<i class="{{.Icon}}"></i>{{end}}
@@ -53,23 +61,70 @@
 			<td data-sort="{{.Size}}">{{.Humansize}}</td>
 			<td data-sort="{{.LastModifiedTime}}">{{.LastModified}}</td>
 			<td>
-			  <a class="waves-effect waves-light btn">zip</a>
-			  <a class="waves-effect waves-light red lighten-2 btn">
+			  <a  class="waves-effect waves-light btn modal-trigger zip-button">zip</a>
+			  
+			  <a class="waves-effect waves-light red lighten-2 btn  del-button">
 				<!-- <i class="mdi-action-delete"></i> -->
 				del
 			  </a>
-			  <a class="waves-effect waves-light blue lighten-1 btn">move</a>
+			  <a class="waves-effect waves-light blue lighten-1 btn mov-button">move</a>
 			</td>
 		  </tr>
 		  {{end}}
-		</table>
 
+		</table>
 	  </div>
 	</div>
+    
+
+	<!-- Modal Structure -->
+	<div id="zipModal" class="modal">
+      <div class="modal-content">
+		<h4>Zip</h4>
+		<br>
+		<form id="zipModalForm">
+		  <div class="input-field col s6">
+			<input id="zipFileName" type="text" value="test" class="validate">
+			<label for="zipFileName">Zip File Name</label>
+		  </div>
+		</form>
+      </div>
+	  <div class="modal-footer">
+		<a href="#" id="zipModalCancel"       class=" waves-effect waves-green btn-flat modal-action modal-close red-text">Cancel</a>
+		<a href="#" id="zipModalZipAndDelete" class="waves-effect waves-green btn-flat modal-action modal-close">Zip and Delete</a>
+		<a href="#" id="zipModalZip"          class="waves-green btn-flat modal-action modal-close">Zip</a>
+      </div>
+	</div>
+
+	<div id="delModal" class="modal">
+      <div class="modal-content">
+		<h4>Delete</h4>
+		<br>
+      </div>
+	  <div class="modal-footer">
+		<a href="#" id="delModalCancel"  class="waves-effect waves-green btn-flat modal-action modal-close red-text">Cancel</a>
+		<a href="#" id="delModalConfirm" class="waves-effect waves-green btn-flat modal-action modal-close">Delete</a>
+      </div>
+	</div>
+
+	<div id="movModal" class="modal">
+      <div class="modal-content">
+		<h4>Move</h4>
+		<br>
+      </div>
+	  <div class="modal-footer">
+		<a href="#" id="movModalCancel"   class="waves-effect waves-green btn-flat modal-action modal-close red-text">Cancel</a>
+		<a href="#" id="movModalConfirm"  class="waves-green btn-flat modal-action modal-close">Confirm Move</a>
+      </div>
+	</div>
+
+
 	<!-- Compiled and minified JavaScript. Loading jquery first -->	
 	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/js/materialize.min.js"></script>   
+	<script type="text/javascript" src="/public/metachu.js"></script>
+
 	<script type="text/javascript">
 	  {{ if .flash }}
 	    toast('<div><h5 class="red-text">{{.flash}}</h5></div>', 4000) // 4000 is the duration of the toast

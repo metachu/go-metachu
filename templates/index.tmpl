@@ -33,7 +33,7 @@
 	  <div class="section">
 
 		<h4 class="header grey-text text-darken-1 thin">  
-		  <a href="."><i class="text-deep-orange mdi-navigation-arrow-back"></i></a>
+		  <a href=" "><i class="text-deep-orange mdi-navigation-arrow-back"></i></a>
 		  {{.path}}
 		</h4>
 		
@@ -50,7 +50,7 @@
 			</tr>
 		  </thead>
 		  {{range .files}}
-		  <tr class="file-row" data-filename="{{.Name}}" data-md5="{{.MD5}}">
+		  <tr class="file-row"  data-rel-path="{{.RelativePath}}" data-filename="{{.Name}}" data-md5="{{.MD5}}">
 			<td class="truncate">
 			  <a href="{{.Ahref}}">
 				{{if .Icon}}<i class="{{.Icon}}"></i>{{end}}
@@ -76,7 +76,7 @@
 	  </div>
 	</div>
     
-
+	
 	<!-- Modal Structure -->
 	<div id="zipModal" class="modal">
       <div class="modal-content">

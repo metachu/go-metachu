@@ -6,39 +6,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
-type M map[string]interface{}
-
-type afile struct {
-	Name             string
-	MD5              string
-	Size             int64
-	Humansize        string
-	Ahref            string
-	Icon             string
-	LastModified     string
-	LastModifiedTime int64
-	IsDir            bool
-}
-
-type Configuration struct {
-	RootPath string
-}
-
-var configuration = Configuration{RootPath: "/home/vagrant"}
+var Config = Configuration{RootPath: "/home/vagrant"}
 
 func main() {
 	loadConfig()
 	m := martini.Classic()
 	m.Use(render.Renderer())
-	m.Use(martini.Static(configuration.RootPath, martini.StaticOptions{Prefix: "download/files/browse"}))
+	m.Use(martini.Static(Config.RootPath, martini.StaticOptions{Prefix: "download/files/browse"}))
 	m.Use(martini.Static("public", martini.StaticOptions{Prefix: "public"}))
 	m.Get("/", func() string {
 		return "Hello World!"
@@ -51,25 +35,72 @@ func main() {
 	m.Get("/files/browse", FileBrowserHandler)
 	m.Get("/files/browse/**", FileBrowserHandler)
 
-	m.Post("/files/json/zip", FileZipHandler)
-	m.Post("/files/json/zip/", FileZipHandler)
+	m.Post("/files/json/zip", binding.Form(FileActionJson{}), FileZipHandler)
+	m.Post("/files/json/zip/", binding.Form(FileActionJson{}), FileZipHandler)
+
+	m.Post("/files/json/delete", binding.Form(FileActionJson{}), FileDeleteHandler)
+	m.Post("/files/json/delete/", binding.Form(FileActionJson{}), FileDeleteHandler)
 
 	m.RunOnAddr("0.0.0.0:3000")
 
 }
 
-func FileZipHandler(params martini.Params, r render.Render, req *http.Request) string {
-	fmt.Printf("%s\n", params)
-	return "lol"
+func FileDeleteHandler(r render.Render, fileAction FileActionJson, req *http.Request) {
+	fmt.Println(fileAction)
+	raw_path, rel_path, err := ValidatePath(fileAction.Filepath)
+	fmt.Println("Delete: ", raw_path, rel_path)
+	if err != nil {
+		r.JSON(400, ERROR_INVALID_PATH)
+		return
+	}
+	err = os.Remove(raw_path)
+	if err != nil {
+		r.JSON(400, ERROR_NO_OS_PERMISSION)
+		return
+	}
+	r.JSON(200, M{"data": M{"title": "Success", "detail": "Deleted the file " + rel_path}})
+
+}
+func FileZipHandler(r render.Render, fileAction FileActionJson, req *http.Request) {
+	raw_path, rel_path, err := ValidatePath(fileAction.Filepath)
+	fmt.Println("Zip: ", raw_path, rel_path)
+	if err != nil {
+		r.JSON(400, ERROR_INVALID_PATH)
+		return
+	}
+	fmt.Println(fileAction.Newname, raw_path)
+	cmd := exec.Command("zip", "-r", fileAction.Newname, raw_path)
+	cmd.Dir = filepath.Dir(raw_path)
+	err = cmd.Run()
+
+	if err != nil {
+		fmt.Println(err)
+		r.JSON(400, ERROR_ZIP_COMMAND)
+		return
+	}
+	if fileAction.Action == "zip" {
+		r.JSON(200, M{"data": M{"title": "Zip Started", "detail": "The zip archive was created. Refreshing page in a moment"}})
+		return
+	}
+	if fileAction.Action == "zipAndDelete" {
+		err = os.Remove(raw_path)
+		if err != nil {
+			r.JSON(400, ERROR_NO_OS_PERMISSION)
+			return
+		}
+		r.JSON(200, M{"data": M{"title": "Success.", "detail": "Zip archive was created and old file was successfully deleted. Refreshing."}})
+		return
+	}
 }
 
 func FileBrowserHandler(params martini.Params, r render.Render, req *http.Request) {
-
-	raw_path, _ := filepath.Abs(filepath.Join(configuration.RootPath, params["_1"]))
+	raw_path, rel_path, err := ValidatePath(params["_1"])
 	raw_path = filepath.Clean(raw_path)
+
 	rawfiles, _ := ioutil.ReadDir(raw_path)
-	cleanurl := raw_path
+	fmt.Printf("rel_path %s\n", rel_path+"\t"+raw_path)
 	file, err := os.Stat(raw_path)
+
 	if err != nil {
 		// file DOES NOT EXISTS
 		fmt.Println("We have encountered an error!")
@@ -81,46 +112,46 @@ func FileBrowserHandler(params martini.Params, r render.Render, req *http.Reques
 	switch mode := file.Mode(); {
 
 	case mode.IsDir():
-		raw_path, _ = filepath.Abs(filepath.Join(configuration.RootPath, file.Name()))
 
-		afiles := make([]afile, len(rawfiles))
+		files := make([]File, len(rawfiles))
 
 		for i, f := range rawfiles {
-			afiles[i].Name = truncate(f.Name(), 20)
+			files[i].Name = truncate(f.Name(), 20)
 			hash := md5.Sum([]byte(f.Name()))
-			afiles[i].MD5 = hex.EncodeToString(hash[:])
-			afiles[i].Size = f.Size()
-			afiles[i].Humansize = humanSize(f.Size())
-			afiles[i].LastModified = f.ModTime().Format("2006-01-02 03:04:05 PM ")
-			afiles[i].LastModifiedTime = f.ModTime().Unix()
-			afiles[i].IsDir = f.IsDir()
-			afiles[i].Ahref = filepath.Join(req.URL.String(), f.Name())
-			if f.IsDir() {
+			files[i].MD5 = hex.EncodeToString(hash[:])
+			files[i].Size = f.Size()
+			files[i].Humansize = humanSize(f.Size())
+			files[i].LastModified = f.ModTime().Format("2006-01-02 03:04:05 PM ")
+			files[i].LastModifiedTime = f.ModTime().Unix()
+			files[i].IsDir = f.IsDir()
+			files[i].Ahref = filepath.Join(req.URL.String(), f.Name())
+			files[i].RelativePath = filepath.Join(rel_path, f.Name())
 
-				afiles[i].Icon = "mdi-file-folder-open"
+			if f.IsDir() {
+				files[i].Icon = "mdi-file-folder-open"
 			} else {
 				//setting download url
-				afiles[i].Ahref = filepath.Join("/download", afiles[i].Ahref)
+				files[i].Ahref = filepath.Join("/download", files[i].Ahref)
 
 				//setting default icon
-				afiles[i].Icon = "mdi-file-file-download"
+				files[i].Icon = "mdi-file-file-download"
 				//non default icons
 				switch filepath.Ext(filepath.Join(raw_path, f.Name())) {
 				case ".txt":
-					afiles[i].Icon = "mdi-content-text-format"
+					files[i].Icon = "mdi-content-text-format"
 				case ".pdf", ".mobi", ".epub":
-					afiles[i].Icon = "mdi-av-my-library-books"
+					files[i].Icon = "mdi-av-my-library-books"
 				case ".mp4", ".avi", ".ogg", ".wmv", ".flv":
-					afiles[i].Icon = "mdi-maps-local-movies"
+					files[i].Icon = "mdi-maps-local-movies"
 				}
 
 			}
 		}
-		context := M{"path": cleanurl, "files": afiles}
+		context := M{"path": raw_path, "files": files}
 		r.HTML(200, "index", context)
 
 	case mode.IsRegular():
-		context := M{"path": cleanurl}
+		context := M{"path": raw_path}
 		r.HTML(200, "index", context)
 	}
 
@@ -153,12 +184,15 @@ func loadConfig() {
 		return
 	}
 	decoder := json.NewDecoder(file)
-	new_configuration := Configuration{}
-	err = decoder.Decode(&new_configuration)
+	new_Config := Configuration{}
+	err = decoder.Decode(&new_Config)
 	if err != nil {
 		fmt.Println("error:", err)
 		return
 	}
-	configuration = new_configuration
-	fmt.Println("Configuration successfully loaded! path is:", configuration.RootPath)
+	Config = new_Config
+
+	Config.RootPath, _ = filepath.Abs(Config.RootPath) // stripping trailing '/'
+
+	fmt.Println("Config successfully loaded! path is:", Config.RootPath)
 }
